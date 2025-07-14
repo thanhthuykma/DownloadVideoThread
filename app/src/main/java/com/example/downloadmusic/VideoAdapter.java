@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.CheckedTextView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -27,10 +28,19 @@ public class VideoAdapter extends ArrayAdapter<VideoItem> {
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.item_video, parent, false);
         }
             TextView url = convertView.findViewById(R.id.tvUrl);
-            CheckBox checkbox = convertView.findViewById(R.id.checkbox);
+        ProgressBar progressBar = convertView.findViewById(R.id.progressbar);
+        TextView txtPer = convertView.findViewById(R.id.txtper);
 
             url.setText(videoItem.getUrl());
-            checkbox.setChecked(videoItem.isDownloaded());
+        if(videoItem.isDownloading()){
+            progressBar.setVisibility(View.VISIBLE);
+            txtPer.setVisibility(View.VISIBLE);
+            progressBar.setProgress(videoItem.getProgress());
+            txtPer.setText(videoItem.getProgress() + "%");
+        }else {
+            progressBar.setVisibility(View.GONE);
+            txtPer.setVisibility(View.GONE);
+        }
             return convertView;
         }
 }

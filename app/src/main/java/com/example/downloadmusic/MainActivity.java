@@ -1,11 +1,15 @@
 package com.example.downloadmusic;
 
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -69,6 +73,7 @@ public class MainActivity extends AppCompatActivity {
     private void downloadVideo(int index) {
         VideoItem item = videoItemList.get(index);
         String url = item.getUrl();
+        item.setDownloading(true);
         //item.setDownloaded(true);
         // Log.d("download", "Đang tải video: " + url);
         /*mainHandler.post(() -> {
@@ -80,8 +85,13 @@ public class MainActivity extends AppCompatActivity {
             HttpURLConnection connection = (HttpURLConnection) url1.openConnection();
             connection.connect();
 
+            int totalSize = connection.getContentLength();
+            int downloaded = 0;
+            int lastProgress = 0;
+
             //Đường dẫn lưu video
-            File file = new File(getExternalFilesDir(null), "video" + index + ".mp4");
+            //File file = new File(getExternalFilesDir(null), "video" + index + ".mp4");
+            File file = new File(Environment.getExternalStorageDirectory(), "Download/" + "video" + index + ".mp4");
             InputStream input = connection.getInputStream();
             FileOutputStream output = new FileOutputStream(file);
 
@@ -89,11 +99,23 @@ public class MainActivity extends AppCompatActivity {
             int len;
             while ((len = input.read(buffer)) != -1){
                 output.write(buffer,0,len);
+                downloaded += len;
+
+                int percen = (int) (downloaded*100/totalSize);
+                if (percen != lastProgress) {
+                    lastProgress = percen;
+                    item.setProgress(percen);
+
+                    mainHandler.post(() -> {
+                       videoAdapter.notifyDataSetChanged();
+                    });
+                }
             }
             output.close();
             input.close();
 
             item.setDownloaded(true);
+          //  item.setDownloading(false);
             mainHandler.post(()-> videoAdapter.notifyDataSetChanged());
         } catch (Exception e) {
             e.printStackTrace();
